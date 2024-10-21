@@ -1,0 +1,107 @@
+body {
+    background-color: #4B2171; /* Purple background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+* {
+    font-family: 'Lato', sans-serif;
+    box-sizing: border-box;
+}
+
+form {
+    width: 400px;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 50px; /* Rounded corners */
+    border: 8px solid black; /* Bold black border */
+    position: relative;
+    padding-bottom: 1.5rem;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2); /* Added shadow for depth */
+}
+
+h1 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 1.5rem;
+    color: black;
+}
+
+label {
+    display: block;
+    font-size: 18px;
+    font-weight: 300;
+    color: black;
+    margin-top: 1rem;
+    margin-bottom: 10px;
+}
+
+input {
+    display: block;
+    border: 2px solid #6A0DAD; /* Purple border around inputs */
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 20px; /* Rounded input fields */
+    background-color: #F5C6D4; /* Light pink background for inputs */
+}
+
+input:focus {
+    outline: none;
+    border-color: #ff0066; /* Pinkish border on focus */
+    box-shadow: 0 0 5px rgba(255, 0, 102, 0.5);
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #FF3B3F; /* Red button */
+    color: white;
+    border: none;
+    border-radius: 20px; /* Rounded button */
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #ff6666; /* Slightly lighter red on hover */
+    color: white;
+}
+
+a {
+    display: block;
+    margin-top: 1rem;
+    text-align: center;
+    color: #ff6666; /* Pink for 'Crear cuenta' link */
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Styling for the icons */
+.fa-user, .fa-unlock {
+    font-size: 24px;
+    color: black;
+    margin-right: 10px;
+}
+
+p.error {
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: black;
+}

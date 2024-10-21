@@ -1,0 +1,46 @@
+div {
+
+    display: flex;
+    justify-content: space-between; /* Espacio entre los divs */
+    height: 100vh; /* Altura de toda la pantalla */
+    margin: 0;
+    
+}
+div.informacion {
+    background-color: hsl(47, 100%, 50%); /* Purple background */
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    width: 30%;
+}
+
+.imagen-usuario {
+    display: block;
+    margin-top: 150px ;/* Espacio superior opcional para separación */
+   
+}
+
+div.opcion {
+    background-color: hsl(0, 0%, 100%); /* Fondo púrpura */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    width: 50%;
+}
+
+button {
+    width: 100%;
+    padding: 30px;
+    background-color: #7e00af; /* Red button */
+    color: white;
+    border: none;
+    border-radius: 10px; /* Rounded button */
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 30px;
+}
