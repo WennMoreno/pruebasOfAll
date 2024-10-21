@@ -56,6 +56,7 @@ if (isset($_POST['NombreCom'], $_POST['Matricula'], $_POST['Cuatri'], $_POST['Gr
                 die("Error: El archivo no es una imagen válida.");
             }
         }
+    
 
         // Intentar mover el archivo subido a la carpeta de destino
         if (move_uploaded_file($_FILES['evidencia']['tmp_name'], $rutaArchivo)) {

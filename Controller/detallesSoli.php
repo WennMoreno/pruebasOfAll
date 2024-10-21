@@ -21,6 +21,7 @@ if (!$result) {
     exit();
 }
 
+
 $solicitud = mysqli_fetch_assoc($result);
 
 if ($solicitud) {
