@@ -1,6 +1,6 @@
-<?php  include '../../Model/Conexion.php'; ?>
+<?php include '../../Model/Profesor.php'; ?>
 
-<!DOCTYPE html>
+<DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -35,153 +35,143 @@
     </script>
 
 </head>
-
 <body>
-  
-        <form action="../../Controller/procesarJusti.php" method="POST" enctype="multipart/form-data">
-            <h1>Solicitar Justificante</h1>
-            <hr>
+    <form action="../../Controller/procesarJusti.php" method="POST" enctype="multipart/form-data">
+        <h1>Solicitar Justificante</h1>
+        <hr>
 
-            <?php if(isset($_GET['error'])){ ?>
-                <p class="error"><?php echo $_GET['error'] ?></p>
-            <?php } ?>
+        <?php
+            include '../../Controller/mostrarMotivos.php';
+            //crear instancia 
+            $motivo = new showMotivs($conexion);
+            //obtener motivos
+            $resultMotivo = $motivo->mostrarMotivos();    
+        ?>
 
-            <br>
+        <?php if (isset($_GET['error'])) { ?>
+            <p class="error"><?php echo $_GET['error'] ?></p>
+        <?php } ?>
 
-            <?php if(isset($_GET['success'])){ ?>
-                <p class="success"><?php echo $_GET['success'] ?></p>
-            <?php } ?>
+        <?php if (isset($_GET['success'])) { ?>
+            <p class="success"><?php echo $_GET['success'] ?></p>
+        <?php } ?>
 
-            <!-- Información del estudiante -->
-            <div class="mb-3">
+        <!-- Información del estudiante -->
+        <div class="mb-3">
             <i class="fa-solid fa-user"></i>
             <label class="form-label">Nombre Completo (Iniciando por apellido)</label>
-            <input type="text" name="NombreCom" placeholder="Nombre Completo" >
-            </div>
+            <input type="text" name="NombreCom" placeholder="Nombre Completo" required>
+        </div>
 
-            <div class="mb-3">
+        <div class="mb-3">
             <i class="fa-brands fa-google-scholar"></i>
             <label>Matrícula (Mayúscula)</label>
-            <input type="text" name="Matricula" placeholder="Matrícula" >
-            </div>
+            <input type="text" name="Matricula" placeholder="Matrícula" required>
+        </div>
 
-            <div class="mb-3">
+        <div class="mb-3">
             <i class="fa-solid fa-chalkboard-user"></i>
             <label>Cuatrimestre (Número)</label>
-            <input type="number" name="Cuatri" placeholder="Cuatrimestre">
-            </div>
+            <input type="number" name="Cuatri" placeholder="Cuatrimestre" required>
+        </div>
 
-            <div class="mb-3">
+        <div class="mb-3">
             <i class="fa-solid fa-user-group"></i>
             <label>Grupo</label>
-            <input type="text" name="Grupo" placeholder="Grupo" >
-            </div>
+            <input type="text" name="Grupo" placeholder="Grupo" required>
+        </div>
 
-            <div class="mb-3">
-                <i class="fa-solid fa-graduation-cap"></i>
-                <label for="Carrera">Carrera</label>
-                <select name="Carrera" id="Carrera" class="form-select">
-                    <option value="" disabled selected>Selecciona tu carrera</option>
-                    <option value="ITI">ITI</option>
-                    <option value="IET">IET</option>
-                </select>
-            </div>
+        <div class="mb-3">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <label for="Carrera">Carrera</label>
+            <select name="Carrera" id="Carrera" class="form-select" required>
+                <option value="" disabled selected>Selecciona tu carrera</option>
+                <option value="ITI">ITI</option>
+                <option value="IET">IET</option>
+            </select>
+        </div>
 
-            
-            <div class="mb-3">
+        <div class="mb-3">
             <i class="fa-solid fa-chalkboard-user"></i>
             <label>Período</label>
-            <input type="text" name="peri" placeholder="Periodo" >
-            </div>
+            <input type="text" name="peri" placeholder="Periodo" required>
+        </div>
 
-            <hr>
+        <hr>
+        
+        <label for="motivo">Motivo:</label>
+        <select id="motivo" name="opciones" required>
             <?php
-                $sqlMotivo = "SELECT tipo FROM motivo"; 
-                $resultMotivo = mysqli_query($conexion, $sqlMotivo);
-            ?>
-            <!-- 3. Generar el formulario HTML -->
-            <label for="motivo">Motivo:</label>
-            <select id="motivo" name="opciones" >
+            if (!empty($resultMotivo)) {
+                ?>
+                    <option value="" disabled selected>Selecciona un motivo</option>
                 <?php
-                // Verificar si hay resultados
-                if ($resultMotivo->num_rows > 0) {
-                    // Salida de datos de cada fila
-                    while ($row = $resultMotivo->fetch_assoc()) {
-                        echo '<option value="' . htmlspecialchars($row['tipo']) . '">' . htmlspecialchars($row['tipo']) . '</option>';
+                foreach ($resultMotivo as $row) {  
+                    echo '<option value="' . htmlspecialchars($row['tipo']) . '">' . htmlspecialchars($row['tipo']) . '</option>';
+                }
+            } else {
+                echo '<option value="">No hay motivos disponibles</option>';
+            }
+            ?>
+        </select>
+
+        <br> 
+        <label>¿Te ausentaste todo el día?</label><br>
+        <input type="radio" id="si" name="info" value="si" onclick="mostrarPreguntas()" required>
+        <label for="si">Sí</label><br>
+        <input type="radio" id="no" name="info" value="no" onclick="mostrarPreguntas()">
+        <label for="no">No</label><br>
+
+        <div id="calendarioHora" class="hidden">
+            <br>
+            <h3>Por favor, selecciona la fecha y hora:</h3>
+            <label for="fecha">Fecha:</label>
+            <input type="date" id="fecha" name="fecha" required><br><br>
+        </div>
+
+        <div id="preguntasAdicionales" class="hidden">
+            <h3>Por favor, selecciona a los profesores con los que tuviste clase:</h3>
+            <div id="listaProfesores" class="hidden">
+                <?php
+                $prof = new Profesor($conexion);
+                $resultProfesor = $prof->obtenerProfesores();
+                if (mysqli_num_rows($resultProfesor) > 0) {
+                    while ($row = mysqli_fetch_assoc($resultProfesor)) {
+                        $nombreCompleto = $row['nombreProf'] . " " . $row['apellidoProf'];
+                        echo "<input type='checkbox' name='profesores[]' value='$nombreCompleto'> $nombreCompleto <br>";
                     }
                 } else {
-                    echo '<option value="">No hay motivos disponibles</option>';
+                    echo "No se encontraron profesores.";
                 }
                 ?>
-            </select>
+                <br><br>
+            </div>
+        </div>
+
+        
+        <!-- Campo de fecha -->
+        <div id="calendarioHora2" class="hidden" >
             <br>
-            <!-- Pregunta si el estudiante se ausentó todo el día -->
-            <label>¿Te ausentaste todo el día?</label><br>
-            <input type="radio" id="si" name="info" value="si" onclick="mostrarPreguntas()" >
-            <label for="si">Sí</label><br>
-            <input type="radio" id="no" name="info" value="no" onclick="mostrarPreguntas()">
-            <label for="no">No</label><br>
-                    <?php
-                        // Consulta para obtener los nombres de los profesores
-                        $sqlProfesor = "
-                        SELECT nombreProf, apellidoProf  FROM profesor ";
-                        $resultProfesor = mysqli_query($conexion, $sqlProfesor);
-                    ?> 
-                        <!-- Campo de fecha -->
-                        <div id="calendarioHora" class="hidden">
-                            <br>
-                            <h3>Por favor, selecciona la fecha y hora:</h3>
-                            <label for="fecha">Fecha:</label>
-                            <input type="date" id="fecha" name="fecha" ><br><br>
-                        </div>
+            <h3>Por favor, selecciona la fecha y hora:</h3>
+            <label for="fecha">Fecha:</label>
+            <input type="date" id="fecha2" name="fecha2"><br><br>
+        </div>
+        
+         <!-- Campo de hora (se muestra solo cuando selecciona "No") -->
+        <div id="campoHora">
+            <label for="hora">Hora inicio:</label>
+            <input type="time" id="hora" name="hora" min="7:00" max="21:00"><br><br>
+            <label for="horaFinal">Hora Final:</label>
+            <input type="time" id="horaFinal" name="horaFinal" min="7:00" max="21:00"><br><br>
+        </div>
 
-                        <!-- Preguntas adicionales que se muestran si seleccionan "Sí" -->
-                        <div id="preguntasAdicionales" class="hidden">
-                            <h3>Por favor, selecciona a los profesores con los que tuviste clase:</h3>
-                            <!-- Lista de profesores que se muestra si seleccionan "Sí" -->
-                        <div id="listaProfesores" class="hidden">
-                        <?php
-                        
-                        // Mostrar los resultados en checkboxes
-                        if (mysqli_num_rows($resultProfesor) > 0) {
-                            // Generar checkbox para cada profesor
-                            while ($row = mysqli_fetch_assoc($resultProfesor)) {
-                                $nombreCompleto = $row['nombreProf'] . " " . $row['apellidoProf'];
-                                echo "<input type='checkbox' name='profesores[]' value='$nombreCompleto'> $nombreCompleto <br>";
-                            }
-                        } else {
-                            echo "No se encontraron profesores.";
-                        }
-                    ?>
-                    <br><br>
-                </div>
-            </div>
+        <label for="evidencia">Sube una evidencia (imagen o PDF):</label>
+        <input type="file" name="evidencia" accept=".jpg, .jpeg, .png, .pdf" required>
 
-            <!-- Campo de fecha -->
-            <div id="calendarioHora2" class="hidden" >
-                <br>
-                <h3>Por favor, selecciona la fecha y hora:</h3>
-                <label for="fecha">Fecha:</label>
-                <input type="date" id="fecha2" name="fecha2"><br><br>
-            </div>
-
-            <!-- Campo de hora (se muestra solo cuando selecciona "No") -->
-            <div id="campoHora">
-                <label for="hora">Hora incio:</label>
-                <input type="time" id="hora" name="hora" min="7:00" max="21:00"><br><br>
-
-                <label for="horaFinal">Hora Final:</label>
-                <input type="time" id="horaFinal" name="horaFinal" min="7:00" max="21:00"><br><br>
-            </div>
-   
-            <!-- Campo para subir archivo -->
-            <label for="evidencia">Sube una evidencia (imagen o PDF):</label>
-            <input type="file" name="evidencia" accept=".jpg, .jpeg, .png, .pdf">
-
-            <div class="form_container">                    
-                <button type="submit" class="formulario_btn" >Solicitar </button>                   
-            </div> 
-            <a href="InicioAlumno.php">Regresar</a>
-        </form>
+        <div class="form_container">                    
+            <button type="submit" class="formulario_btn">Solicitar</button>                   
+        </div> 
+        <a href="InicioAlumno.php">Regresar</a>
+    </form>
 </body>
 </html>

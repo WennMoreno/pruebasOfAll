@@ -1,10 +1,13 @@
 <?php  
-include '../Model/Conexion.php'; 
-?>
+    session_start();
+    include '../Model/Conexion.php';
+    include '../Model/Justificante.php';
+    include '../Model/Evidencia.php';
+    include '../Model/Profesor.php';
+    include '../Model/JustificanteProfesor.php';  
 
-<?php
-session_start();
-
+    
+  
 // Mostrar los datos enviados y los archivos subidos
 echo '<pre>';
 print_r($_POST); // Ver todos los datos del formulario
@@ -57,57 +60,61 @@ if (isset($_POST['NombreCom'], $_POST['Matricula'], $_POST['Cuatri'], $_POST['Gr
             }
         }
     
-
         // Intentar mover el archivo subido a la carpeta de destino
         if (move_uploaded_file($_FILES['evidencia']['tmp_name'], $rutaArchivo)) {
-                echo "El archivo se ha subido exitosamente.";
+            echo "El archivo se ha subido exitosamente.";
 
-                // Insertar la evidencia en la base de datos
-                $stmtEvidencia = $conexion->prepare("INSERT INTO evidencia (nomenclatura, ruta) VALUES (?, ?)");
-                $stmtEvidencia->bind_param("ss", $nombreArchivo, $rutaArchivo);
-                $stmtEvidencia->execute();
-                $idEvidencia = $conexion->insert_id; // Obtener el ID de la evidencia insertada
+            // Crear instancias de los modelos
+            $evidenciaModel = new Evidencia($conexion);
+            $justificanteModel = new Justificante($conexion);
+            $profesorModel = new Profesor($conexion);
+            $justificanteProfesorModel = new JustificanteProfesor($conexion);
 
+            // Insertar la evidencia en la base de datos
+            $idEvidencia = $evidenciaModel->insertarEvidencia($nombreArchivo, $rutaArchivo);
+
+            if ($idEvidencia) {
                 // Insertar el justificante en la base de datos
-                $stmtJustificante = $conexion->prepare("INSERT INTO justificante (nombre, matricula, cuatrimestre, grupo, carrera, periodo, motivo, motivoExtra, fecha, horaInicio, horaFin, ausenteTodoDia, idEvi) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-$stmtJustificante->bind_param("ssiissssssiii", $nombre, $matricula, $cuatrimestre, $grupo, $carrera, $periodo, $motivo, $motivoE, $fecha, $horaInicio, $horaFin, $ausenteTodoDia, $idEvidencia);
-$stmtJustificante->execute();
-                $idJustificante = $conexion->insert_id; // Obtener el ID del justificante insertado
+                $idJustificante = $justificanteModel->insertarJustificante([
+                    'nombre' => $nombre,
+                    'matricula' => $matricula,
+                    'cuatrimestre' => $cuatrimestre,
+                    'grupo' => $grupo,
+                    'carrera' => $carrera,
+                    'periodo' => $periodo,
+                    'motivo' => $motivo,
+                    'motivoE' => $motivoE,
+                    'fecha' => $fecha,
+                    'horaInicio' => $horaInicio,
+                    'horaFin' => $horaFin,
+                    'ausenteTodoDia' => $ausenteTodoDia,
+                    'idEvi' => $idEvidencia
+                ]);
 
                 // Si el estudiante faltó todo el día, insertar los profesores seleccionados en `justificante_profesor`
                 if ($ausenteTodoDia && !empty($_POST['profesores'])) {
                     foreach ($_POST['profesores'] as $nombreProfesor) {
-                        // Obtener el ID del profesor seleccionado
-                        $stmtProfesor = $conexion->prepare("SELECT idProf FROM profesor WHERE CONCAT(nombreProf, ' ', apellidoProf) = ?");
-                        $stmtProfesor->bind_param("s", $nombreProfesor);
-                        $stmtProfesor->execute();
-                        $resultProfesor = $stmtProfesor->get_result();
-
-                        if ($resultProfesor->num_rows > 0) {
-                            $rowProfesor = $resultProfesor->fetch_assoc();
-                            $idProfesor = $rowProfesor['idProf'];
-
-                            // Insertar la relación en `justificante_profesor`
-                            $stmtJustificanteProfesor = $conexion->prepare("INSERT INTO justificante_profesor (idJusti, idProf) VALUES (?, ?)");
-                            $stmtJustificanteProfesor->bind_param("ii", $idJustificante, $idProfesor);
-                            $stmtJustificanteProfesor->execute();
+                        $idProfesor = $profesorModel->obtenerIdPorNombre($nombreProfesor);
+                        if ($idProfesor) {
+                            $justificanteProfesorModel->insertarJustificanteProfesor($idJustificante, $idProfesor);
                         }
                     }
                 }
 
                 // Mensaje de éxito
                 echo "Justificante solicitado exitosamente.";
+                exit();
             } else {
-                echo "Error al mover el archivo. Verifica la ruta de destino y permisos.";
+                echo "Error al insertar la evidencia en la base de datos.";
             }
         } else {
-            echo "Error en la subida del archivo. Código de error: " . $_FILES['evidencia']['error'];
+            echo "Error al mover el archivo. Verifica la ruta de destino y permisos.";
         }
+      
     } else {
         header("location: ../Views/StudentView/SoliJusti.php");
         exit();
     }
-
+}
 
 ?>

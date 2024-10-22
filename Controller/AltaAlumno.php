@@ -1,4 +1,7 @@
-<?php  include '../Model/Conexion.php'; ?>
+<?php 
+    include '../Model/Conexion.php';
+    include '../Model/Alumno.php';
+?>
 
 <?php 
    session_start();
@@ -18,7 +21,7 @@
         $clave=validar($_POST['clave']);
         $Rclave=validar($_POST['Rclave']);
     
-        $datosUsuario='nombre='.$nombre."&ape=".$ape.'&nac='.$feNac.'&matricula='.$usuario;
+        $datosUsuario='nombre='.$nombre."&ape=".$ape.'&nac='.$nac.'&matricula='.$usuario;
 
         if(empty($nombre)){
             header("location: ../Views/StudentView/Registrarse.php?error=El Nombre es requerido&$datosUsuario");
@@ -58,27 +61,20 @@
                 exit();
             }
 
-            $consulta="select * from alumno where matricula = '$usuario'";
-            $query= mysqli_query($conexion, $consulta);
-
-            if(mysqli_num_rows($query)>0){
+            // Crear una instancia
+            $alumnoModel = new Alumno ($conexion);
+            if ($alumnoModel->validarMatriculaExistente($usuario)) {
                 header("location: ../Views/StudentView/Registrarse.php?error=El Usuario ya existe");
                 exit();
-            }else{
-                // Si no existe, ingresar datos a la tabla. Nota= Ahora uso la variable $nac en lugar de $feNac
-                $sql= "INSERT INTO alumno(nombreAlu, apellidoAlu, feNac, matricula, contrasena, confirmacionContra) 
-                         VALUES('$nombre', '$ape', '$nac', '$usuario', '$clave', '$clave2')";
-                $execute= mysqli_query($conexion, $sql);
-
-                if($execute){
+            } else {
+                // Registrar el alumno
+                if ($alumnoModel->registrarAlumno($nombre, $ape, $nac, $usuario, $clave, $clave2)) {
                     header("location: ../Views/StudentView/Registrarse.php?success=Usuario Creado Exitosamente");
-                    exit();
-                }else{
-                    header("location: ../Views/StudentView/Registrarse.php?success=Ocurrio un Error");
-                    exit();
+                } else {
+                    header("location: ../Views/StudentView/Registrarse.php?error=Ocurrio un Error");
                 }
-
-            }
+                exit();
+            }   
         }
     }else{
         header("location: ../Views/StudenView/Registrarse.php");
